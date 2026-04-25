@@ -436,7 +436,24 @@ const GoPlusIcon = () => (
   </svg>
 );
 
+const CashLoanCardIcon = () => (
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+    <circle cx="22" cy="22" r="20" stroke="#1450d0" strokeWidth="2.5" />
+    <circle cx="22" cy="22" r="14" fill="#f5c800" />
+    <rect x="14" y="16" width="16" height="12" rx="2" fill="#1450d0" />
+    <circle cx="22" cy="22" r="3" fill="#f5c800" />
+    <path d="M14 19h16M14 25h16" stroke="#fff" strokeWidth="1" strokeDasharray="2 2"/>
+    <circle cx="32" cy="12" r="6" fill="#1450d0" />
+    <path d="M29 12l2 2 3-3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
 const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
+  // Switch to green colors when the demo goal is achieved to differentiate it completely
+  const activeColor = isDemoAchieved ? COLORS.green : COLORS.blue;
+  const activeBg = isDemoAchieved ? "#e8f8ee" : "#eef2ff";
+  const activeBarBg = isDemoAchieved ? "#bcf0d4" : "#d0d9f8";
+
   const stages = isDemoAchieved
     ? [
         { label: "Plan", done: true },
@@ -470,7 +487,7 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
         }}
       >
         <div style={{ position: "absolute", width: 80, height: 80, borderRadius: "50%", background: "rgba(20,80,208,0.35)", top: -20, right: -20, pointerEvents: "none" }} />
-        <GoPlusIcon />
+        {isDemoAchieved ? <CashLoanCardIcon /> : <GoPlusIcon />}
         <div style={{ textAlign: "center" }}>
           <div style={{ color: "#fff", fontSize: 14, fontWeight: 900, letterSpacing: 0.3 }}>
             {isDemoAchieved ? "CashLoan" : "GO+"}
@@ -479,14 +496,14 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
             {isDemoAchieved ? "Personal Financing" : "Savings Plan"}
           </div>
         </div>
-        <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ color: "#4ADE80", fontSize: 12, fontWeight: 900 }}>
-            {isDemoAchieved ? "Approved" : "2.80% p.a."}
+        <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "3px 10px", display: "flex", alignItems: "center", gap: 4, minHeight: 22 }}>
+          <span style={{ color: "#4ADE80", fontSize: isDemoAchieved ? 10 : 12, fontWeight: 900, textAlign: "center", lineHeight: 1.2 }}>
+            {isDemoAchieved ? "Ready for Application" : "2.80% p.a."}
           </span>
         </div>
         <div style={{ width: "100%", background: COLORS.blue, borderRadius: 10, padding: "7px 0", textAlign: "center" }}>
           <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>
-            {isDemoAchieved ? "View Details ›" : "Start Saving ›"}
+            {isDemoAchieved ? "Apply Now ›" : "Start Saving ›"}
           </span>
         </div>
       </div>
@@ -506,7 +523,7 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 12, fontWeight: 900, color: COLORS.text }}>My Journey</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.blue }}>View ›</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: activeColor, transition: "color 0.5s ease" }}>View ›</span>
         </div>
 
         {/* Progress track */}
@@ -518,10 +535,10 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
             left: 8, 
             width: isDemoAchieved ? "100%" : "45%", 
             height: 3, 
-            background: COLORS.blue, 
+            background: activeColor, 
             borderRadius: 4, 
             zIndex: 1, 
-            transition: "width 0.5s ease" 
+            transition: "all 0.5s ease" 
           }} />
 
           <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 2 }}>
@@ -529,34 +546,34 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
               <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
                 <div style={{
                   width: 20, height: 20, borderRadius: "50%",
-                  background: done ? COLORS.blue : "#e8eaf0",
-                  border: `2px solid ${done ? COLORS.blue : "#ccc"}`,
+                  background: done ? activeColor : "#e8eaf0",
+                  border: `2px solid ${done ? activeColor : "#ccc"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "all 0.5s ease"
                 }}>
                   {done && <span style={{ color: "#fff", fontSize: 10, fontWeight: 900 }}>✓</span>}
-                  {!done && i === 2 && <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.blue, display: "block" }} />}
+                  {!done && i === 2 && <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeColor, display: "block" }} />}
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 700, color: done ? COLORS.blue : "#bbb", textAlign: "center", lineHeight: 1.2, transition: "color 0.5s ease" }}>{label}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: done ? activeColor : "#bbb", textAlign: "center", lineHeight: 1.2, transition: "color 0.5s ease" }}>{label}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Current stage info */}
-        <div style={{ background: "#eef2ff", borderRadius: 10, padding: "8px 10px" }}>
+        <div style={{ background: activeBg, borderRadius: 10, padding: "8px 10px", transition: "background 0.5s ease" }}>
           <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600 }}>Current stage</div>
-          <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.blue, marginTop: 1 }}>
-            {isDemoAchieved ? "Financed ✦" : "Saver ✦"}
+          <div style={{ fontSize: 12, fontWeight: 900, color: activeColor, marginTop: 1, transition: "color 0.5s ease" }}>
+            {isDemoAchieved ? "Ready to Finance ✦" : "Saver ✦"}
           </div>
           <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>
             {isDemoAchieved ? "Goal Achieved" : "Next: Investor"}
           </div>
-          <div style={{ marginTop: 5, background: "#d0d9f8", borderRadius: 6, height: 4, overflow: "hidden" }}>
+          <div style={{ marginTop: 5, background: activeBarBg, borderRadius: 6, height: 4, overflow: "hidden", transition: "background 0.5s ease" }}>
             <div style={{ 
               height: "100%", 
               width: isDemoAchieved ? "100%" : "35%", 
-              background: COLORS.blue, 
+              background: activeColor, 
               borderRadius: 6,
               transition: "width 0.5s ease"
             }} />
@@ -785,47 +802,99 @@ const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding, isDemoAchie
         </div>
       )}
 
-      {/* GO+ / CashLoan Info Tab */}
-      {(activeSection === "go+" || activeSection === "cashloan") && (
+      {/* GO+ Info Tab */}
+      {activeSection === "go+" && (
         <div style={{ padding: "0 16px 16px" }}>
           <div style={{ background: "#001A3C", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  {isDemoAchieved ? "CashLoan Balance" : "GO+ Balance"}
+                  GO+ Balance
                 </div>
                 <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginTop: 2 }}>RM 1,205.00</div>
                 <div style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700, marginTop: 3 }}>
-                  {isDemoAchieved ? "Your requested funding" : "+RM 2.82 earned today"}
+                  +RM 2.82 earned today
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "4px 10px" }}>
                   <div style={{ color: "#4ADE80", fontSize: 14, fontWeight: 900 }}>
-                    {isDemoAchieved ? "Approved" : "2.80%"}
+                    2.80%
                   </div>
                   <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: 700 }}>
-                    {isDemoAchieved ? "Status" : "p.a."}
+                    p.a.
                   </div>
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                {isDemoAchieved ? "Pay Instalment" : "+ Top Up"}
+                + Top Up
               </button>
               <button style={{ flex: 1, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                {isDemoAchieved ? "View Contract" : "Withdraw"}
+                Withdraw
               </button>
             </div>
           </div>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { label: isDemoAchieved ? "Next Payment" : "This month earned", val: isDemoAchieved ? "RM 250" : "RM 2.34", color: COLORS.green, icon: isDemoAchieved ? "📅" : "📈" },
-              { label: isDemoAchieved ? "Remaining Term" : "Total earned", val: isDemoAchieved ? "36 Months" : "RM 18.90", color: COLORS.blue, icon: isDemoAchieved ? "⌛" : "💰" },
+              { label: "This month earned", val: "RM 2.34", color: COLORS.green, icon: "📈" },
+              { label: "Total earned", val: "RM 18.90", color: COLORS.blue, icon: "💰" },
               { label: "Days active", val: "87 days", color: COLORS.orange, icon: "📅" },
-              { label: isDemoAchieved ? "Interest Rate" : "Projected annual", val: isDemoAchieved ? "8% p.a." : "RM 33.74", color: "#9b59b6", icon: "🎯" },
+              { label: "Projected annual", val: "RM 33.74", color: "#9b59b6", icon: "🎯" },
+            ].map(({ label, val, color, icon }) => (
+              <div key={label} style={{ background: "#eef1f8", borderRadius: 12, padding: "10px 12px" }}>
+                <span style={{ fontSize: 16 }}>{icon}</span>
+                <div style={{ fontSize: 14, fontWeight: 900, color, marginTop: 4 }}>{val}</div>
+                <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* CashLoan Info Tab (Shown when demo achieved) */}
+      {activeSection === "cashloan" && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <div style={{ background: "#001A3C", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  Pre-Approved Offer
+                </div>
+                <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginTop: 2 }}>RM 10,000.00</div>
+                <div style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700, marginTop: 3 }}>
+                  Ready for Application
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "4px 10px" }}>
+                  <div style={{ color: "#4ADE80", fontSize: 14, fontWeight: 900 }}>
+                    8.00%
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: 700 }}>
+                    p.a.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                Apply Now
+              </button>
+              <button style={{ flex: 1, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                View Details
+              </button>
+            </div>
+          </div>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { label: "Max Term", val: "60 Months", color: COLORS.green, icon: "📅" },
+              { label: "Est. Monthly", val: "RM 233", color: COLORS.blue, icon: "💵" },
+              { label: "Processing", val: "Fast Approval", color: COLORS.orange, icon: "⚡" },
+              { label: "Interest Rate", val: "8.0% p.a.", color: "#9b59b6", icon: "🎯" },
             ].map(({ label, val, color, icon }) => (
               <div key={label} style={{ background: "#eef1f8", borderRadius: 12, padding: "10px 12px" }}>
                 <span style={{ fontSize: 16 }}>{icon}</span>
