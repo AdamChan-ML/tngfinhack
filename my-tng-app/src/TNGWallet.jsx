@@ -1,4 +1,7 @@
 import { useState } from "react";
+import cimbLogo from "./assets/CIMB-Logo.jpg";
+import publicBankLogo from "./assets/public-bank.svg";
+import maybankLogo from "./assets/maybank.png";
 
 const COLORS = {
   blue: "#1450d0",
@@ -448,7 +451,7 @@ const CashLoanCardIcon = () => (
   </svg>
 );
 
-const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
+const GoPlusAndPlanningRow = ({ isDemoAchieved, onApplyNow, onStartSaving }) => {
   // Switch to green colors when the demo goal is achieved to differentiate it completely
   const activeColor = isDemoAchieved ? COLORS.green : COLORS.blue;
   const activeBg = isDemoAchieved ? "#e8f8ee" : "#eef2ff";
@@ -501,11 +504,31 @@ const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
             {isDemoAchieved ? "Ready for Application" : "2.80% p.a."}
           </span>
         </div>
-        <div style={{ width: "100%", background: COLORS.blue, borderRadius: 10, padding: "7px 0", textAlign: "center" }}>
+        <button
+          onClick={() => {
+            if (isDemoAchieved && onApplyNow) {
+              onApplyNow();
+              return;
+            }
+            if (!isDemoAchieved && onStartSaving) {
+              onStartSaving();
+            }
+          }}
+          style={{
+            width: "100%",
+            background: COLORS.blue,
+            borderRadius: 10,
+            padding: "7px 0",
+            textAlign: "center",
+            border: "none",
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
           <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>
             {isDemoAchieved ? "Apply Now ›" : "Start Saving ›"}
           </span>
-        </div>
+        </button>
       </div>
 
       {/* Financial Planning Stages Card */}
@@ -629,7 +652,7 @@ const GoalRing = ({ label, current, target, color, icon }) => {
   );
 };
 
-const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding, isDemoAchieved }) => {
+const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding, isDemoAchieved, onApplyNow }) => {
   const [activeSection, setActiveSection] = useState("spending");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   
@@ -880,7 +903,10 @@ const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding, isDemoAchie
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+              <button
+                onClick={onApplyNow}
+                style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+              >
                 Apply Now
               </button>
               <button style={{ flex: 1, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
@@ -1376,6 +1402,379 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
   );
 };
 
+const BankBadge = ({ bankName, bankCode }) => {
+  const code = (bankCode || "").toUpperCase();
+  const logoSrcByCode = {
+    CIMB: cimbLogo,
+    PBB: publicBankLogo,
+    MBB: maybankLogo,
+  };
+  const src = logoSrcByCode[code];
+
+  if (!src) {
+    return (
+      <div
+        style={{
+          marginTop: 6,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          borderRadius: 999,
+          padding: "3px 8px",
+          background: "#eef3ff",
+        }}
+      >
+        <span style={{ fontSize: 9, fontWeight: 900, color: COLORS.blue }}>{bankName}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        marginTop: 6,
+        width: 164,
+        height: 40,
+        borderRadius: 8,
+        overflow: "hidden",
+        border: `1px solid ${COLORS.border}`,
+        background: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2px 6px",
+      }}
+    >
+      <img
+        src={src}
+        alt={bankName}
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      />
+    </div>
+  );
+};
+
+const LoanSelectionPage = ({ loanOptions, selectedLoanId, onSelectLoan, onProceed, onBack }) => {
+  return (
+    <div style={{ padding: "14px 12px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0f2f7d 0%, #1450d0 60%, #1f63e0 100%)",
+          borderRadius: 16,
+          padding: "14px 14px 12px",
+          color: "#fff",
+          boxShadow: "0 8px 20px rgba(20,80,208,0.25)",
+        }}
+      >
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.2, opacity: 0.92 }}>Loan Application</div>
+        <div style={{ marginTop: 6, fontSize: 17, fontWeight: 900, lineHeight: 1.35 }}>Choose a loan to apply now</div>
+        <div style={{ marginTop: 8, fontSize: 11, opacity: 0.9 }}>
+          We’ll generate your TnG underwritten report and continue to the application portal.
+        </div>
+      </div>
+
+      <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: COLORS.text, marginBottom: 10 }}>Available Loan Products</div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {loanOptions.map((loan) => {
+            const isSelected = selectedLoanId === loan.id;
+
+            return (
+              <button
+                key={loan.id}
+                onClick={() => onSelectLoan(loan.id)}
+                style={{
+                  borderRadius: 12,
+                  border: isSelected ? `1.5px solid ${COLORS.blue}` : `1px solid ${COLORS.border}`,
+                  background: isSelected ? "#edf3ff" : "#fff",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: "10px",
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.text }}>{loan.name}</div>
+                  <BankBadge
+                    bankName={loan.bankName}
+                    bankCode={loan.bankCode}
+                  />
+                  <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Up to RM {Number(loan.maxAmount).toLocaleString()}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Rate from {loan.rate}% p.a.</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Tenure up to {loan.maxTenureMonths} months</span>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    border: `2px solid ${isSelected ? COLORS.blue : "#bcc7df"}`,
+                    background: isSelected ? COLORS.blue : "transparent",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 900,
+                    flexShrink: 0,
+                  }}
+                >
+                  {isSelected ? "✓" : ""}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 4, display: "flex", gap: 8 }}>
+        <button
+          onClick={onBack}
+          style={{
+            flex: 1,
+            border: `1px solid ${COLORS.border}`,
+            background: "#fff",
+            color: COLORS.text,
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Back
+        </button>
+        <button
+          onClick={onProceed}
+          disabled={!selectedLoanId}
+          style={{
+            flex: 1,
+            border: "none",
+            background: selectedLoanId ? COLORS.blue : "#b5c6ea",
+            color: "#fff",
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: selectedLoanId ? "pointer" : "not-allowed",
+            fontFamily: "inherit",
+          }}
+        >
+          Continue to Portal
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LoanApplicationPortal = ({ selectedLoan, report, onBackToSelection, onSubmitApplication }) => {
+  if (!selectedLoan) return null;
+
+  const scorePct = Math.max(0, Math.min((report.estimatedCreditScore / 850) * 100, 100));
+  const scoreColor = report.estimatedCreditScore >= 720 ? COLORS.green : report.estimatedCreditScore >= 650 ? COLORS.orange : COLORS.red;
+
+  return (
+    <div style={{ padding: "14px 12px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0f2f7d 0%, #1450d0 60%, #1f63e0 100%)",
+          borderRadius: 16,
+          padding: "14px 14px 12px",
+          color: "#fff",
+          boxShadow: "0 8px 20px rgba(20,80,208,0.25)",
+        }}
+      >
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.2, opacity: 0.92 }}>Loan Application Portal</div>
+        <div style={{ marginTop: 6, fontSize: 16, fontWeight: 900, lineHeight: 1.35 }}>{selectedLoan.name}</div>
+        <div style={{ marginTop: 8, fontSize: 11, opacity: 0.92 }}>
+          Requested amount: RM {Number(selectedLoan.requestAmount).toLocaleString()} · Tenure: {selectedLoan.requestTenureMonths} months · Est. rate {selectedLoan.rate}% p.a.
+        </div>
+      </div>
+
+      <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: COLORS.text }}>TnG Underwritten Report</div>
+            <div style={{ marginTop: 2, fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Based on your repayment readiness and wallet activity</div>
+          </div>
+          <span style={{ fontSize: 9, fontWeight: 900, color: "#1450d0", background: "#eef3ff", borderRadius: 999, padding: "3px 8px" }}>
+            PRE-ASSESSMENT
+          </span>
+        </div>
+
+        <div style={{ marginTop: 10, background: "#f8faff", borderRadius: 10, padding: "10px" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Estimated Credit Score</div>
+          <div style={{ marginTop: 5, display: "flex", alignItems: "baseline", gap: 6 }}>
+            <span style={{ fontSize: 24, fontWeight: 900, color: scoreColor }}>{report.estimatedCreditScore}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.gray }}>/ 850 ({report.scoreBand})</span>
+          </div>
+          <div style={{ marginTop: 8, background: "#e8edf8", borderRadius: 8, height: 8, overflow: "hidden" }}>
+            <div style={{ width: `${scorePct}%`, height: "100%", background: scoreColor, borderRadius: 8 }} />
+          </div>
+        </div>
+
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: COLORS.text, marginBottom: 8 }}>Loan Repayment Period Overview</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {report.metrics.map((item) => (
+              <div key={item.label} style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
+                <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>{item.label}</div>
+                <div style={{ marginTop: 3, fontSize: 14, fontWeight: 900, color: COLORS.text }}>{item.value}</div>
+                <div style={{ marginTop: 2, fontSize: 10, color: item.deltaColor || COLORS.green, fontWeight: 700 }}>{item.delta}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 10, borderTop: `1px dashed ${COLORS.border}`, paddingTop: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: COLORS.text, marginBottom: 6 }}>Underwriter Notes</div>
+          <ul style={{ margin: 0, paddingLeft: 18, color: COLORS.gray, fontSize: 10, fontWeight: 700, lineHeight: 1.5 }}>
+            {report.notes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 4, display: "flex", gap: 8 }}>
+        <button
+          onClick={onBackToSelection}
+          style={{
+            flex: 1,
+            border: `1px solid ${COLORS.border}`,
+            background: "#fff",
+            color: COLORS.text,
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Change Loan
+        </button>
+        <button
+          onClick={onSubmitApplication}
+          style={{
+            flex: 1,
+            border: "none",
+            background: COLORS.blue,
+            color: "#fff",
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Submit Application
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LoanSubmissionPage = ({ selectedLoan, report, onApplyAnother, onBackHome }) => {
+  if (!selectedLoan) return null;
+
+  return (
+    <div style={{ padding: "14px 12px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0c7a4d 0%, #00a86b 70%, #24c781 100%)",
+          borderRadius: 16,
+          padding: "14px 14px 12px",
+          color: "#fff",
+          boxShadow: "0 8px 20px rgba(0,168,107,0.25)",
+        }}
+      >
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 0.2, opacity: 0.95 }}>Application Submitted</div>
+        <div style={{ marginTop: 6, fontSize: 16, fontWeight: 900, lineHeight: 1.35 }}>
+          {selectedLoan.name} sent for review ✅
+        </div>
+        <div style={{ marginTop: 8, fontSize: 11, opacity: 0.95 }}>
+          Ref: TNG-{selectedLoan.id.toUpperCase()}-2026 · Estimated review within 5 days
+        </div>
+      </div>
+
+      <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: COLORS.text }}>Submitted Underwritten Snapshot</div>
+        <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
+            <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>Loan Product</div>
+            <div style={{ marginTop: 3, fontSize: 13, fontWeight: 900, color: COLORS.text }}>{selectedLoan.name}</div>
+          </div>
+          <div style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
+            <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>Estimated Credit Score</div>
+            <div style={{ marginTop: 3, fontSize: 13, fontWeight: 900, color: COLORS.text }}>
+              {report.estimatedCreditScore} / 850 ({report.scoreBand})
+            </div>
+          </div>
+          <div style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
+            <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>Requested Amount</div>
+            <div style={{ marginTop: 3, fontSize: 13, fontWeight: 900, color: COLORS.text }}>
+              RM {Number(selectedLoan.requestAmount).toLocaleString()}
+            </div>
+          </div>
+          <div style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
+            <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>Repayment Loan Amount per Month</div>
+            <div style={{ marginTop: 3, fontSize: 13, fontWeight: 900, color: COLORS.text }}>
+              {report.metrics.find((item) => item.label.includes("Repayment Loan Amount per Month"))?.value || "N/A"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 4, display: "flex", gap: 8 }}>
+        <button
+          onClick={onApplyAnother}
+          style={{
+            flex: 1,
+            border: `1px solid ${COLORS.border}`,
+            background: "#fff",
+            color: COLORS.text,
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Apply Another Loan
+        </button>
+        <button
+          onClick={onBackHome}
+          style={{
+            flex: 1,
+            border: "none",
+            background: COLORS.blue,
+            color: "#fff",
+            borderRadius: 10,
+            padding: "9px 10px",
+            fontSize: 12,
+            fontWeight: 800,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Back to Home
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function TNGWallet() {
   const [balVisible, setBalVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
@@ -1389,9 +1788,85 @@ export default function TNGWallet() {
   const [otherGoalDetail, setOtherGoalDetail] = useState("");
   const [showJourneyPage, setShowJourneyPage] = useState(false);
   const [journeyMilestones, setJourneyMilestones] = useState([]);
+  const [loanFlowStep, setLoanFlowStep] = useState("none");
+  const [selectedLoanId, setSelectedLoanId] = useState("personal-flexi");
   
-  // State to toggle between standard view and "Achieved" view via the "Add Money" button
+  // State to control main vs secondary homepage simulation
   const [isDemoAchieved, setIsDemoAchieved] = useState(false);
+
+  const loanOptions = [
+    {
+      id: "personal-flexi",
+      name: "Personal Flexi Loan",
+      bankName: "CIMB Bank",
+      bankCode: "CIMB",
+      bankPrimary: "#ed1c24",
+      bankBg: "#fff1f3",
+      maxAmount: 20000,
+      rate: 7.6,
+      maxTenureMonths: 60,
+      requestAmount: 10000,
+      requestTenureMonths: 48,
+    },
+    {
+      id: "motorcycle-plus",
+      name: "Motorcycle Plus Loan",
+      bankName: "Public Bank",
+      bankCode: "PBB",
+      bankPrimary: "#d31245",
+      bankBg: "#fff0f5",
+      maxAmount: 15000,
+      rate: 6.9,
+      maxTenureMonths: 48,
+      requestAmount: 10000,
+      requestTenureMonths: 36,
+    },
+    {
+      id: "cash-express",
+      name: "CashExpress Loan",
+      bankName: "Maybank",
+      bankCode: "MBB",
+      bankPrimary: "#f2b400",
+      bankBg: "#fff8dd",
+      maxAmount: 12000,
+      rate: 8,
+      maxTenureMonths: 36,
+      requestAmount: 8000,
+      requestTenureMonths: 24,
+    },
+  ];
+
+  const selectedLoan = loanOptions.find((loan) => loan.id === selectedLoanId) || loanOptions[0];
+
+  const openLoanSelection = () => {
+    setShowOnboarding(false);
+    setShowJourneyPage(false);
+    setLoanFlowStep("select");
+  };
+
+  const switchToSecondaryHome = () => {
+    setIsDemoAchieved(true);
+  };
+
+  const underwritingReport = {
+    estimatedCreditScore: isDemoAchieved ? 723 : 688,
+    scoreBand: isDemoAchieved ? "Good" : "Fair",
+    metrics: [
+      { label: "Budget Discipline", value: isDemoAchieved ? "91%" : "78%", delta: isDemoAchieved ? "↑ +12% vs start" : "↑ +5% vs start", deltaColor: COLORS.green },
+      { label: "On-time Bill Payments", value: isDemoAchieved ? "12 / 12" : "9 / 12", delta: isDemoAchieved ? "No missed payments" : "1 late payment", deltaColor: isDemoAchieved ? COLORS.green : COLORS.orange },
+      { label: "Savings Consistency", value: isDemoAchieved ? "10 months" : "6 months", delta: isDemoAchieved ? "Strong monthly trend" : "Improving trend", deltaColor: COLORS.green },
+      {
+        label: "Repayment Loan Amount per Month",
+        value: isDemoAchieved ? "RM 233 / month" : "RM 318 / month",
+        deltaColor: isDemoAchieved ? COLORS.green : COLORS.orange,
+      },
+    ],
+    notes: [
+      "Stable spending behavior observed during the financial plan period.",
+      "Cash flow trend indicates sufficient repayment buffer for the selected loan tier.",
+      "No high-risk transaction volatility detected in recent cycles.",
+    ],
+  };
 
   const focusOptions = [
     { value: "loan", label: "Loan", icon: "🏍️" },
@@ -1496,10 +1971,7 @@ export default function TNGWallet() {
             View asset details <span>›</span>
           </button>
           <div style={styles.balBtns}>
-            <button 
-              style={styles.addMoneyBtn}
-              onClick={() => setIsDemoAchieved(prev => !prev)}
-            >
+            <button style={styles.addMoneyBtn}>
               ＋ Add money
             </button>
             <button style={styles.txnLink}>Transactions ›</button>
@@ -1525,7 +1997,29 @@ export default function TNGWallet() {
           </div>
         </div>
 
-        {showJourneyPage ? (
+        {loanFlowStep === "select" ? (
+          <LoanSelectionPage
+            loanOptions={loanOptions}
+            selectedLoanId={selectedLoanId}
+            onSelectLoan={setSelectedLoanId}
+            onProceed={() => setLoanFlowStep("portal")}
+            onBack={() => setLoanFlowStep("none")}
+          />
+        ) : loanFlowStep === "portal" ? (
+          <LoanApplicationPortal
+            selectedLoan={selectedLoan}
+            report={underwritingReport}
+            onBackToSelection={() => setLoanFlowStep("select")}
+            onSubmitApplication={() => setLoanFlowStep("submitted")}
+          />
+        ) : loanFlowStep === "submitted" ? (
+          <LoanSubmissionPage
+            selectedLoan={selectedLoan}
+            report={underwritingReport}
+            onApplyAnother={() => setLoanFlowStep("select")}
+            onBackHome={() => setLoanFlowStep("none")}
+          />
+        ) : showJourneyPage ? (
           <FinancialJourneyPage
             goalText={userGoal}
             milestones={journeyMilestones}
@@ -1544,21 +2038,37 @@ export default function TNGWallet() {
               setUserGoal={setUserGoal}
               onOpenOnboarding={() => setShowOnboarding(true)}
               isDemoAchieved={isDemoAchieved}
+              onApplyNow={openLoanSelection}
             />
 
             {/* GO+ Entry & Financial Planning */}
-            <GoPlusAndPlanningRow isDemoAchieved={isDemoAchieved} />
+            <GoPlusAndPlanningRow
+              isDemoAchieved={isDemoAchieved}
+              onApplyNow={openLoanSelection}
+              onStartSaving={switchToSecondaryHome}
+            />
 
             {/* Info Cards */}
             <div style={styles.cardsRow}>
               {/* Grow your money */}
-              <div style={styles.miniCard}>
+              <button
+                onClick={() => setIsDemoAchieved((prev) => !prev)}
+                style={{
+                  ...styles.miniCard,
+                  width: "100%",
+                  border: "none",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                }}
+              >
                 <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#e8f7ee", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🌱</div>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.text, lineHeight: 1.2 }}>Grow your money</div>
-                  <div style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>Start with just RM10</div>
+                  <div style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>
+                    {isDemoAchieved ? "Grow your wealth effortlessly with GO+" : "See how GO+ can help you reach your financial goals."}
+                  </div>
                 </div>
-              </div>
+              </button>
               {/* Fuel card */}
               <div style={styles.fuelCard}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -1653,15 +2163,15 @@ export default function TNGWallet() {
         {showOnboarding && (
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              background: "rgba(0,0,0,0.45)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 30,
-              padding: 14,
-            }}
+            position: "absolute",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "flex-start", // 👈 move content to top
+            justifyContent: "flex-start",
+            zIndex: 30,
+            padding: "100% 14px 14px", // 👈 increase top padding to push it down
+          }}
           >
             <div
               style={{
@@ -1763,7 +2273,7 @@ export default function TNGWallet() {
                         </select>
                       </div>
 
-                      <div style={{ marginBottom: 8 }}>
+                      <div style={{ width: "95%", marginBottom: 8 }}>
                         <label style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Target amount (RM)</label>
                         <input
                           value={loanAmount}
@@ -1772,7 +2282,7 @@ export default function TNGWallet() {
                         />
                       </div>
 
-                      <div style={{ marginBottom: 8 }}>
+                      <div style={{ width: "95%", marginBottom: 8 }}>
                         <label style={{ fontSize: 10, fontWeight: 700, color: COLORS.gray }}>Timeline</label>
                         <input
                           value={loanTimeline}
