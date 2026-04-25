@@ -1455,6 +1455,16 @@ const BankBadge = ({ bankName, bankCode }) => {
 };
 
 const LoanSelectionPage = ({ loanOptions, selectedLoanId, onSelectLoan, onProceed, onBack }) => {
+  const [isContinuingToPortal, setIsContinuingToPortal] = useState(false);
+
+  const handleProceed = () => {
+    setIsContinuingToPortal(true);
+    setTimeout(() => {
+      setIsContinuingToPortal(false);
+      onProceed();
+    }, 3000);
+  };
+
   return (
     <div style={{ padding: "14px 12px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
       <div
@@ -1553,22 +1563,22 @@ const LoanSelectionPage = ({ loanOptions, selectedLoanId, onSelectLoan, onProcee
           Back
         </button>
         <button
-          onClick={onProceed}
-          disabled={!selectedLoanId}
+          onClick={handleProceed}
+          disabled={!selectedLoanId || isContinuingToPortal}
           style={{
             flex: 1,
             border: "none",
-            background: selectedLoanId ? COLORS.blue : "#b5c6ea",
+            background: selectedLoanId && !isContinuingToPortal ? COLORS.blue : "#b5c6ea",
             color: "#fff",
             borderRadius: 10,
             padding: "9px 10px",
             fontSize: 12,
             fontWeight: 800,
-            cursor: selectedLoanId ? "pointer" : "not-allowed",
+            cursor: selectedLoanId && !isContinuingToPortal ? "pointer" : "not-allowed",
             fontFamily: "inherit",
           }}
         >
-          Continue to Portal
+          {isContinuingToPortal ? "Loading..." : "Continue to Portal"}
         </button>
       </div>
     </div>
@@ -1576,6 +1586,8 @@ const LoanSelectionPage = ({ loanOptions, selectedLoanId, onSelectLoan, onProcee
 };
 
 const LoanApplicationPortal = ({ selectedLoan, report, onBackToSelection, onSubmitApplication }) => {
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
+
   if (!selectedLoan) return null;
 
   const scorePct = Math.max(0, Math.min((report.estimatedCreditScore / 850) * 100, 100));
@@ -1622,7 +1634,7 @@ const LoanApplicationPortal = ({ selectedLoan, report, onBackToSelection, onSubm
         </div>
 
         <div style={{ marginTop: 10 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: COLORS.text, marginBottom: 8 }}>Loan Repayment Period Overview</div>
+          <div style={{ fontSize: 11, fontWeight: 900, color: COLORS.text, marginBottom: 8 }}>Financial Journey Period Overview</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {report.metrics.map((item) => (
               <div key={item.label} style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
@@ -1663,21 +1675,28 @@ const LoanApplicationPortal = ({ selectedLoan, report, onBackToSelection, onSubm
           Change Loan
         </button>
         <button
-          onClick={onSubmitApplication}
+          onClick={() => {
+            setIsSubmittingApplication(true);
+            setTimeout(() => {
+              setIsSubmittingApplication(false);
+              onSubmitApplication();
+            }, 2000);
+          }}
+          disabled={isSubmittingApplication}
           style={{
             flex: 1,
             border: "none",
-            background: COLORS.blue,
+            background: isSubmittingApplication ? "#b5c6ea" : COLORS.blue,
             color: "#fff",
             borderRadius: 10,
             padding: "9px 10px",
             fontSize: 12,
             fontWeight: 800,
-            cursor: "pointer",
+            cursor: isSubmittingApplication ? "not-allowed" : "pointer",
             fontFamily: "inherit",
           }}
         >
-          Submit Application
+          {isSubmittingApplication ? "Submitting..." : "Submit Application"}
         </button>
       </div>
     </div>
@@ -1708,7 +1727,7 @@ const LoanSubmissionPage = ({ selectedLoan, report, onApplyAnother, onBackHome }
       </div>
 
       <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: COLORS.text }}>Submitted Underwritten Snapshot</div>
+        <div style={{ fontSize: 13, fontWeight: 900, color: COLORS.text }}>Financial Journey Overview</div>
         <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div style={{ background: "#f6f8ff", borderRadius: 10, padding: "9px 10px" }}>
             <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 700 }}>Loan Product</div>
@@ -1794,6 +1813,8 @@ export default function TNGWallet() {
   // State to control main vs secondary homepage simulation
   const [isDemoAchieved, setIsDemoAchieved] = useState(false);
 
+  const [isSavingGoal, setIsSavingGoal] = useState(false);
+
   const loanOptions = [
     {
       id: "personal-flexi",
@@ -1876,50 +1897,54 @@ export default function TNGWallet() {
   ];
 
   const completeOnboarding = () => {
-    if (goalFocus === "loan") {
-      const normalizedAmount = Number(loanAmount || 0).toLocaleString();
-      setUserGoal(`Apply ${loanType} loan of RM${normalizedAmount} in ${loanTimeline} time`);
-      setJourneyMilestones([
-        {
-          title: "Stabilize monthly cash flow using GO+",
-          hint: "Build consistency with weekly GO+ top-ups and keep spending within budget.",
-          done: true,
-        },
-        {
-          title: "Invest a portion of savings into Investment Options",
-          hint: "Allocate a percentage from savings into suitable investment choices like e-Mas, ASNB, Principal®, or e-Trade.",
-          done: false,
-          showInvestmentIcons: true,
-        },
-        {
-          title: "Protect plan with GOInsurance",
-          hint: "Optional safeguard layer before taking on major financing commitments.",
-          done: false,
-          optional: true,
-          showInsuranceOptions: true,
-        },
-        {
-          title: "Apply for CashLoan",
-          hint: `Prepare and submit your application to meet your final goal.`,
-          done: false,
-          showCashLoanOptions: true,
-        },
-      ]);
-    } else {
-      const label = focusOptions.find((o) => o.value === goalFocus)?.label || "Financial";
-      const detail = otherGoalDetail.trim() || "Build consistency and reach my target";
-      setUserGoal(`${label} Goal: ${detail}`);
-      setJourneyMilestones([
-        { title: `Define your ${label.toLowerCase()} target`, hint: "Set realistic monthly checkpoint", done: true },
-        { title: "Automate monthly contribution", hint: "Use recurring top-up from wallet", done: false },
-        { title: "Track progress every 2 weeks", hint: "Adjust amount when income changes", done: false },
-        { title: "Review and optimize plan", hint: "Increase allocation after milestone hit", done: false },
-      ]);
-    }
-    
-    setShowOnboarding(false);
-    setShowJourneyPage(true);
-    setOnboardingStep(1);
+    setIsSavingGoal(true);
+    setTimeout(() => {
+      if (goalFocus === "loan") {
+        const normalizedAmount = Number(loanAmount || 0).toLocaleString();
+        setUserGoal(`Apply ${loanType} loan of RM${normalizedAmount} in ${loanTimeline} time`);
+        setJourneyMilestones([
+          {
+            title: "Stabilize monthly cash flow using GO+",
+            hint: "Build consistency with weekly GO+ top-ups and keep spending within budget.",
+            done: true,
+          },
+          {
+            title: "Invest a portion of savings into Investment Options",
+            hint: "Allocate a percentage from savings into suitable investment choices like e-Mas, ASNB, Principal®, or e-Trade.",
+            done: false,
+            showInvestmentIcons: true,
+          },
+          {
+            title: "Protect plan with GOInsurance",
+            hint: "Optional safeguard layer before taking on major financing commitments.",
+            done: false,
+            optional: true,
+            showInsuranceOptions: true,
+          },
+          {
+            title: "Apply for CashLoan",
+            hint: `Prepare and submit your application to meet your final goal.`,
+            done: false,
+            showCashLoanOptions: true,
+          },
+        ]);
+      } else {
+        const label = focusOptions.find((o) => o.value === goalFocus)?.label || "Financial";
+        const detail = otherGoalDetail.trim() || "Build consistency and reach my target";
+        setUserGoal(`${label} Goal: ${detail}`);
+        setJourneyMilestones([
+          { title: `Define your ${label.toLowerCase()} target`, hint: "Set realistic monthly checkpoint", done: true },
+          { title: "Automate monthly contribution", hint: "Use recurring top-up from wallet", done: false },
+          { title: "Track progress every 2 weeks", hint: "Adjust amount when income changes", done: false },
+          { title: "Review and optimize plan", hint: "Increase allocation after milestone hit", done: false },
+        ]);
+      }
+      
+      setIsSavingGoal(false);
+      setShowOnboarding(false);
+      setShowJourneyPage(true);
+      setOnboardingStep(1);
+    }, 3000);
   };
 
   return (
@@ -2316,9 +2341,10 @@ export default function TNGWallet() {
                     </button>
                     <button
                       onClick={completeOnboarding}
-                      style={{ border: "none", background: COLORS.blue, color: COLORS.white, borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+                      disabled={isSavingGoal}
+                      style={{ border: "none", background: isSavingGoal ? COLORS.gray : COLORS.blue, color: COLORS.white, borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: isSavingGoal ? "not-allowed" : "pointer", fontFamily: "inherit" }}
                     >
-                      Save goal
+                      {isSavingGoal ? "Saving..." : "Save goal"}
                     </button>
                   </div>
                 </>
