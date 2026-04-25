@@ -436,18 +436,25 @@ const GoPlusIcon = () => (
   </svg>
 );
 
-const GoPlusAndPlanningRow = () => {
-  const stages = [
-    { label: "Starter", done: true },
-    { label: "Saver", done: true },
-    { label: "Investor", done: false },
-    { label: "Planner", done: false },
-  ];
+const GoPlusAndPlanningRow = ({ isDemoAchieved }) => {
+  const stages = isDemoAchieved
+    ? [
+        { label: "Plan", done: true },
+        { label: "Save", done: true },
+        { label: "Invest", done: true },
+        { label: "Finance", done: true },
+      ]
+    : [
+        { label: "Plan", done: true },
+        { label: "Save", done: true },
+        { label: "Invest", done: false },
+        { label: "Finance", done: false },
+      ];
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "12px 10px 0" }}>
 
-      {/* GO+ Button Card */}
+      {/* Dynamic GO+ / CashLoan Card */}
       <div
         style={{
           background: "#001A3C",
@@ -465,14 +472,22 @@ const GoPlusAndPlanningRow = () => {
         <div style={{ position: "absolute", width: 80, height: 80, borderRadius: "50%", background: "rgba(20,80,208,0.35)", top: -20, right: -20, pointerEvents: "none" }} />
         <GoPlusIcon />
         <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#fff", fontSize: 14, fontWeight: 900, letterSpacing: 0.3 }}>GO+</div>
-          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: 600, marginTop: 2 }}>Savings Plan</div>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 900, letterSpacing: 0.3 }}>
+            {isDemoAchieved ? "CashLoan" : "GO+"}
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: 600, marginTop: 2 }}>
+            {isDemoAchieved ? "Personal Financing" : "Savings Plan"}
+          </div>
         </div>
         <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ color: "#4ADE80", fontSize: 12, fontWeight: 900 }}>2.80% p.a.</span>
+          <span style={{ color: "#4ADE80", fontSize: 12, fontWeight: 900 }}>
+            {isDemoAchieved ? "Approved" : "2.80% p.a."}
+          </span>
         </div>
         <div style={{ width: "100%", background: COLORS.blue, borderRadius: 10, padding: "7px 0", textAlign: "center" }}>
-          <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>Start Saving ›</span>
+          <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>
+            {isDemoAchieved ? "View Details ›" : "Start Saving ›"}
+          </span>
         </div>
       </div>
 
@@ -497,7 +512,17 @@ const GoPlusAndPlanningRow = () => {
         {/* Progress track */}
         <div style={{ position: "relative", paddingTop: 6 }}>
           <div style={{ position: "absolute", top: 17, left: 8, right: 8, height: 3, background: "#e8eaf0", borderRadius: 4, zIndex: 0 }} />
-          <div style={{ position: "absolute", top: 17, left: 8, width: "45%", height: 3, background: COLORS.blue, borderRadius: 4, zIndex: 1 }} />
+          <div style={{ 
+            position: "absolute", 
+            top: 17, 
+            left: 8, 
+            width: isDemoAchieved ? "100%" : "45%", 
+            height: 3, 
+            background: COLORS.blue, 
+            borderRadius: 4, 
+            zIndex: 1, 
+            transition: "width 0.5s ease" 
+          }} />
 
           <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 2 }}>
             {stages.map(({ label, done }, i) => (
@@ -507,11 +532,12 @@ const GoPlusAndPlanningRow = () => {
                   background: done ? COLORS.blue : "#e8eaf0",
                   border: `2px solid ${done ? COLORS.blue : "#ccc"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.5s ease"
                 }}>
                   {done && <span style={{ color: "#fff", fontSize: 10, fontWeight: 900 }}>✓</span>}
                   {!done && i === 2 && <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.blue, display: "block" }} />}
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 700, color: done ? COLORS.blue : "#bbb", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: done ? COLORS.blue : "#bbb", textAlign: "center", lineHeight: 1.2, transition: "color 0.5s ease" }}>{label}</span>
               </div>
             ))}
           </div>
@@ -520,12 +546,24 @@ const GoPlusAndPlanningRow = () => {
         {/* Current stage info */}
         <div style={{ background: "#eef2ff", borderRadius: 10, padding: "8px 10px" }}>
           <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600 }}>Current stage</div>
-          <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.blue, marginTop: 1 }}>Saver ✦</div>
-          <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>Next: Investor</div>
-          <div style={{ marginTop: 5, background: "#d0d9f8", borderRadius: 6, height: 4, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: "65%", background: COLORS.blue, borderRadius: 6 }} />
+          <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.blue, marginTop: 1 }}>
+            {isDemoAchieved ? "Financed ✦" : "Saver ✦"}
           </div>
-          <div style={{ fontSize: 9, color: COLORS.gray, fontWeight: 600, marginTop: 3 }}>65% to next level</div>
+          <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>
+            {isDemoAchieved ? "Goal Achieved" : "Next: Investor"}
+          </div>
+          <div style={{ marginTop: 5, background: "#d0d9f8", borderRadius: 6, height: 4, overflow: "hidden" }}>
+            <div style={{ 
+              height: "100%", 
+              width: isDemoAchieved ? "100%" : "35%", 
+              background: COLORS.blue, 
+              borderRadius: 6,
+              transition: "width 0.5s ease"
+            }} />
+          </div>
+          <div style={{ fontSize: 9, color: COLORS.gray, fontWeight: 600, marginTop: 3 }}>
+            {isDemoAchieved ? "100% completed" : "35% to next level"}
+          </div>
         </div>
       </div>
 
@@ -574,10 +612,12 @@ const GoalRing = ({ label, current, target, color, icon }) => {
   );
 };
 
-const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding }) => {
+const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding, isDemoAchieved }) => {
   const [activeSection, setActiveSection] = useState("spending");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
-  const sections = ["spending", "categories", "goals", "go+"];
+  
+  // Dynamically change the 4th tab depending on the demo state
+  const sections = ["spending", "categories", "goals", isDemoAchieved ? "cashloan" : "go+"];
 
   return (
     <div style={{ margin: "12px 10px 0", background: COLORS.white, borderRadius: 18, boxShadow: "0 2px 16px rgba(0,0,0,0.07)", overflow: "hidden" }}>
@@ -662,17 +702,23 @@ const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding }) => {
 
       {/* Tab Pills */}
       <div style={{ display: "flex", gap: 6, padding: "10px 14px", overflowX: "auto", scrollbarWidth: "none" }}>
-        {sections.map((s) => (
-          <button key={s} onClick={() => setActiveSection(s)} style={{
-            flexShrink: 0, padding: "5px 13px", borderRadius: 20, border: "none",
-            background: activeSection === s ? COLORS.blue : "#eef1f8",
-            color: activeSection === s ? "#fff" : COLORS.gray,
-            fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-            textTransform: "capitalize", transition: "all 0.2s",
-          }}>
-            {s === "go+" ? "GO+" : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
+        {sections.map((s) => {
+          let labelText = s.charAt(0).toUpperCase() + s.slice(1);
+          if (s === "go+") labelText = "GO+";
+          if (s === "cashloan") labelText = "CashLoan";
+
+          return (
+            <button key={s} onClick={() => setActiveSection(s)} style={{
+              flexShrink: 0, padding: "5px 13px", borderRadius: 20, border: "none",
+              background: activeSection === s ? COLORS.blue : "#eef1f8",
+              color: activeSection === s ? "#fff" : COLORS.gray,
+              fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+              textTransform: "capitalize", transition: "all 0.2s",
+            }}>
+              {labelText}
+            </button>
+          )
+        })}
       </div>
 
       {/* Spending Trends */}
@@ -739,38 +785,47 @@ const FinanceDashboard = ({ userGoal, setUserGoal, onOpenOnboarding }) => {
         </div>
       )}
 
-      {/* GO+ */}
-      {activeSection === "go+" && (
+      {/* GO+ / CashLoan Info Tab */}
+      {(activeSection === "go+" || activeSection === "cashloan") && (
         <div style={{ padding: "0 16px 16px" }}>
           <div style={{ background: "#001A3C", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>GO+ Balance</div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  {isDemoAchieved ? "CashLoan Balance" : "GO+ Balance"}
+                </div>
                 <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginTop: 2 }}>RM 1,205.00</div>
-                <div style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700, marginTop: 3 }}>+RM 2.82 earned today</div>
+                <div style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700, marginTop: 3 }}>
+                  {isDemoAchieved ? "Your requested funding" : "+RM 2.82 earned today"}
+                </div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "4px 10px" }}>
-                  <div style={{ color: "#4ADE80", fontSize: 14, fontWeight: 900 }}>2.80%</div>
-                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: 700 }}>p.a.</div>
+                  <div style={{ color: "#4ADE80", fontSize: 14, fontWeight: 900 }}>
+                    {isDemoAchieved ? "Approved" : "2.80%"}
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: 700 }}>
+                    {isDemoAchieved ? "Status" : "p.a."}
+                  </div>
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                + Top Up
+                {isDemoAchieved ? "Pay Instalment" : "+ Top Up"}
               </button>
               <button style={{ flex: 1, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                Withdraw
+                {isDemoAchieved ? "View Contract" : "Withdraw"}
               </button>
             </div>
           </div>
+          
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { label: "This month earned", val: "RM 2.34", color: COLORS.green, icon: "📈" },
-              { label: "Total earned", val: "RM 18.90", color: COLORS.blue, icon: "💰" },
+              { label: isDemoAchieved ? "Next Payment" : "This month earned", val: isDemoAchieved ? "RM 250" : "RM 2.34", color: COLORS.green, icon: isDemoAchieved ? "📅" : "📈" },
+              { label: isDemoAchieved ? "Remaining Term" : "Total earned", val: isDemoAchieved ? "36 Months" : "RM 18.90", color: COLORS.blue, icon: isDemoAchieved ? "⌛" : "💰" },
               { label: "Days active", val: "87 days", color: COLORS.orange, icon: "📅" },
-              { label: "Projected annual", val: "RM 33.74", color: "#9b59b6", icon: "🎯" },
+              { label: isDemoAchieved ? "Interest Rate" : "Projected annual", val: isDemoAchieved ? "8% p.a." : "RM 33.74", color: "#9b59b6", icon: "🎯" },
             ].map(({ label, val, color, icon }) => (
               <div key={label} style={{ background: "#eef1f8", borderRadius: 12, padding: "10px 12px" }}>
                 <span style={{ fontSize: 16 }}>{icon}</span>
@@ -1256,7 +1311,7 @@ export default function TNGWallet() {
   const [balVisible, setBalVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
   const [userGoal, setUserGoal] = useState("Apply motorcycle loan of RM10,000 in one year time");
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [goalFocus, setGoalFocus] = useState("loan");
   const [loanType, setLoanType] = useState("motorcycle");
@@ -1265,6 +1320,9 @@ export default function TNGWallet() {
   const [otherGoalDetail, setOtherGoalDetail] = useState("");
   const [showJourneyPage, setShowJourneyPage] = useState(false);
   const [journeyMilestones, setJourneyMilestones] = useState([]);
+  
+  // State to toggle between standard view and "Achieved" view via the "Add Money" button
+  const [isDemoAchieved, setIsDemoAchieved] = useState(false);
 
   const focusOptions = [
     { value: "loan", label: "Loan", icon: "🏍️" },
@@ -1369,7 +1427,12 @@ export default function TNGWallet() {
             View asset details <span>›</span>
           </button>
           <div style={styles.balBtns}>
-            <button style={styles.addMoneyBtn}>＋ Add money</button>
+            <button 
+              style={styles.addMoneyBtn}
+              onClick={() => setIsDemoAchieved(prev => !prev)}
+            >
+              ＋ Add money
+            </button>
             <button style={styles.txnLink}>Transactions ›</button>
           </div>
         </div>
@@ -1411,10 +1474,11 @@ export default function TNGWallet() {
               userGoal={userGoal}
               setUserGoal={setUserGoal}
               onOpenOnboarding={() => setShowOnboarding(true)}
+              isDemoAchieved={isDemoAchieved}
             />
 
             {/* GO+ Entry & Financial Planning */}
-            <GoPlusAndPlanningRow />
+            <GoPlusAndPlanningRow isDemoAchieved={isDemoAchieved} />
 
             {/* Info Cards */}
             <div style={styles.cardsRow}>
