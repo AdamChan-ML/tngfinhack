@@ -1,6 +1,6 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://13.229.124.39:8000").replace(/\/$/, "");
 
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 150000;
 const DEFAULT_SUMMARY_TIMEOUT_MS = Number(import.meta.env.VITE_TX_SUMMARY_TIMEOUT_MS || 15000);
 const DEFAULT_ANALYZE_TIMEOUT_MS = Number(import.meta.env.VITE_ANALYZE_TIMEOUT_MS || 90000);
 const DEFAULT_SAMPLE_FILE_NAME = "transaction_lines_sample.txt";
