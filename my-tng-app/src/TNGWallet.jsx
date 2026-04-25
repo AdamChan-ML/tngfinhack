@@ -426,6 +426,351 @@ const PromoCarousel = () => {
   );
 };
 
+const GoPlusIcon = () => (
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+    <circle cx="22" cy="22" r="20" stroke="#1450d0" strokeWidth="2.5" />
+    <circle cx="22" cy="22" r="14" fill="#f5c800" />
+    <text x="19" y="27" fontSize="13" fontWeight="900" fill="#1a1a2e" fontFamily="Nunito,sans-serif">$</text>
+    <circle cx="32" cy="12" r="6" fill="#1450d0" />
+    <text x="29.5" y="16" fontSize="11" fontWeight="900" fill="#fff" fontFamily="Nunito,sans-serif">+</text>
+  </svg>
+);
+
+const GoPlusAndPlanningRow = () => {
+  const stages = [
+    { label: "Starter", done: true },
+    { label: "Saver", done: true },
+    { label: "Investor", done: false },
+    { label: "Planner", done: false },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "12px 10px 0" }}>
+
+      {/* GO+ Button Card */}
+      <div
+        style={{
+          background: "#001A3C",
+          borderRadius: 16,
+          padding: "14px 14px 12px",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* subtle glow blob */}
+        <div style={{ position: "absolute", width: 80, height: 80, borderRadius: "50%", background: "rgba(20,80,208,0.35)", top: -20, right: -20, pointerEvents: "none" }} />
+        <GoPlusIcon />
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 900, letterSpacing: 0.3 }}>GO+</div>
+          <div style={{ color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: 600, marginTop: 2 }}>Savings Plan</div>
+        </div>
+        <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ color: "#4ADE80", fontSize: 12, fontWeight: 900 }}>2.80% p.a.</span>
+        </div>
+        <div style={{ width: "100%", background: COLORS.blue, borderRadius: 10, padding: "7px 0", textAlign: "center" }}>
+          <span style={{ color: "#fff", fontSize: 11, fontWeight: 800 }}>Start Saving ›</span>
+        </div>
+      </div>
+
+      {/* Financial Planning Stages Card */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e8eaf0",
+          borderRadius: 16,
+          padding: "14px 14px 12px",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 12, fontWeight: 900, color: COLORS.text }}>My Journey</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.blue }}>View ›</span>
+        </div>
+
+        {/* Progress track */}
+        <div style={{ position: "relative", paddingTop: 6 }}>
+          {/* connector line */}
+          <div style={{ position: "absolute", top: 17, left: 8, right: 8, height: 3, background: "#e8eaf0", borderRadius: 4, zIndex: 0 }} />
+          <div style={{ position: "absolute", top: 17, left: 8, width: "45%", height: 3, background: COLORS.blue, borderRadius: 4, zIndex: 1 }} />
+
+          <div style={{ display: "flex", justifyContent: "space-between", position: "relative", zIndex: 2 }}>
+            {stages.map(({ label, done }, i) => (
+              <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: "50%",
+                  background: done ? COLORS.blue : "#e8eaf0",
+                  border: `2px solid ${done ? COLORS.blue : "#ccc"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {done && <span style={{ color: "#fff", fontSize: 10, fontWeight: 900 }}>✓</span>}
+                  {!done && i === 2 && <span style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.blue, display: "block" }} />}
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: done ? COLORS.blue : "#bbb", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Current stage info */}
+        <div style={{ background: "#eef2ff", borderRadius: 10, padding: "8px 10px" }}>
+          <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600 }}>Current stage</div>
+          <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.blue, marginTop: 1 }}>Saver ✦</div>
+          <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>Next: Investor</div>
+          <div style={{ marginTop: 5, background: "#d0d9f8", borderRadius: 6, height: 4, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: "65%", background: COLORS.blue, borderRadius: 6 }} />
+          </div>
+          <div style={{ fontSize: 9, color: COLORS.gray, fontWeight: 600, marginTop: 3 }}>65% to next level</div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+const SpendingBar = ({ label, amount, max, color, icon }) => {
+  const pct = Math.min((amount / max) * 100, 100);
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 14 }}>{icon}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: COLORS.text }}>{label}</span>
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 800, color: COLORS.text }}>RM {amount.toFixed(0)}</span>
+      </div>
+      <div style={{ height: 7, background: "#eef1f8", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 10, transition: "width 0.6s ease" }} />
+      </div>
+    </div>
+  );
+};
+
+const GoalRing = ({ label, current, target, color, icon }) => {
+  const pct = Math.min(current / target, 1);
+  const r = 22;
+  const circ = 2 * Math.PI * r;
+  const dash = circ * pct;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+      <div style={{ position: "relative", width: 58, height: 58 }}>
+        <svg width="58" height="58" viewBox="0 0 58 58" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="29" cy="29" r={r} fill="none" stroke="#eef1f8" strokeWidth="6" />
+          <circle cx="29" cy="29" r={r} fill="none" stroke={color} strokeWidth="6"
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
+        </svg>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", fontSize: 18 }}>{icon}</div>
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: COLORS.text, lineHeight: 1.2 }}>{label}</div>
+        <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600 }}>{Math.round(pct * 100)}%</div>
+      </div>
+    </div>
+  );
+};
+
+const FinanceDashboard = () => {
+  const [activeSection, setActiveSection] = useState("spending");
+  const [userGoal, setUserGoal] = useState("Apply motorcycle loan of RM10,000 in one year time");
+  const [isGoalEditing, setIsGoalEditing] = useState(false);
+  const sections = ["spending", "categories", "goals", "go+"];
+
+  return (
+    <div style={{ margin: "12px 10px 0", background: COLORS.white, borderRadius: 18, boxShadow: "0 2px 16px rgba(0,0,0,0.07)", overflow: "hidden" }}>
+      {/* Financial Goal Snapshot */}
+      <div style={{ padding: "12px 14px 6px" }}>
+        <div style={{
+          background: "#f6f8ff",
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: "10px 12px",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 900, color: COLORS.text }}>Financial Goal Snapshot</span>
+            <button
+              onClick={() => setIsGoalEditing((prev) => !prev)}
+              style={{
+                border: "none",
+                background: "none",
+                color: COLORS.blue,
+                fontSize: 10,
+                fontWeight: 900,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                padding: 0,
+              }}
+            >
+              {isGoalEditing ? "Save" : "Edit"}
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 13 }}>🎯</span>
+            <input
+              value={userGoal}
+              onChange={(e) => setUserGoal(e.target.value)}
+              disabled={!isGoalEditing}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setIsGoalEditing(false);
+                }
+              }}
+              style={{
+                width: "100%",
+                border: `1px solid ${COLORS.border}`,
+                outline: "none",
+                background: COLORS.white,
+                fontSize: 11,
+                fontWeight: 800,
+                color: COLORS.text,
+                fontFamily: "inherit",
+                borderRadius: 8,
+                padding: "8px 10px",
+                opacity: isGoalEditing ? 1 : 0.8,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Header */}
+      <div style={{ padding: "14px 16px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 14, fontWeight: 900, color: COLORS.text }}>My Finance</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: COLORS.blue, cursor: "pointer" }}>April 2025 ▾</span>
+      </div>
+
+      {/* Tab Pills */}
+      <div style={{ display: "flex", gap: 6, padding: "10px 14px", overflowX: "auto", scrollbarWidth: "none" }}>
+        {sections.map((s) => (
+          <button key={s} onClick={() => setActiveSection(s)} style={{
+            flexShrink: 0, padding: "5px 13px", borderRadius: 20, border: "none",
+            background: activeSection === s ? COLORS.blue : "#eef1f8",
+            color: activeSection === s ? "#fff" : COLORS.gray,
+            fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            textTransform: "capitalize", transition: "all 0.2s",
+          }}>
+            {s === "go+" ? "GO+" : s.charAt(0).toUpperCase() + s.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Spending Trends */}
+      {activeSection === "spending" && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+            {[
+              { month: "Feb", amt: 820, active: false },
+              { month: "Mar", amt: 1140, active: false },
+              { month: "Apr", amt: 680, active: true },
+            ].map(({ month, amt, active }) => (
+              <div key={month} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: active ? COLORS.blue : COLORS.gray }}>{month}</span>
+                <div style={{ width: 36, background: "#eef1f8", borderRadius: 8, height: 60, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
+                  <div style={{ width: "100%", borderRadius: 8, background: active ? COLORS.blue : "#c8d5f0", height: `${(amt / 1200) * 100}%`, transition: "height 0.5s ease" }} />
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: active ? COLORS.text : COLORS.gray }}>RM {amt}</span>
+              </div>
+            ))}
+            <div style={{ flex: 2, paddingLeft: 14 }}>
+              <div style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600, marginBottom: 4 }}>This month</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: COLORS.text, lineHeight: 1 }}>RM 680</div>
+              <div style={{ fontSize: 11, color: COLORS.green, fontWeight: 700, marginTop: 3 }}>▼ 40% vs last month</div>
+              <div style={{ marginTop: 8, background: "#eef1f8", borderRadius: 8, height: 5, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: "45%", background: COLORS.green, borderRadius: 8 }} />
+              </div>
+              <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 3 }}>RM 680 of RM 1,500 budget</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Categories */}
+      {activeSection === "categories" && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <SpendingBar label="Food & Drinks" amount={234} max={600} color="#f5a623" icon="🍔" />
+          <SpendingBar label="Transport" amount={156} max={600} color={COLORS.blue} icon="🚗" />
+          <SpendingBar label="Shopping" amount={189} max={600} color={COLORS.red} icon="🛍️" />
+          <SpendingBar label="Bills & Utilities" amount={78} max={600} color={COLORS.green} icon="💡" />
+          <SpendingBar label="Entertainment" amount={23} max={600} color="#9b59b6" icon="🎮" />
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: COLORS.text }}>Total: <span style={{ color: COLORS.blue }}>RM 680</span></span>
+          </div>
+        </div>
+      )}
+
+      {/* Goals */}
+      {activeSection === "goals" && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-around", marginBottom: 14 }}>
+            <GoalRing label="Emergency\nFund" current={3200} target={5000} color={COLORS.blue} icon="🏦" />
+            <GoalRing label="Vacation\nBali" current={800} target={2000} color={COLORS.orange} icon="✈️" />
+            <GoalRing label="New\nLaptop" current={1500} target={1800} color={COLORS.green} icon="💻" />
+          </div>
+          <div style={{ background: "#eef1f8", borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: 11, color: COLORS.gray, fontWeight: 600 }}>Total saved</div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: COLORS.text }}>RM 5,500</div>
+            </div>
+            <button style={{ background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "7px 14px", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+              + New Goal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GO+ */}
+      {activeSection === "go+" && (
+        <div style={{ padding: "0 16px 16px" }}>
+          <div style={{ background: "#001A3C", borderRadius: 14, padding: "14px 16px", marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>GO+ Balance</div>
+                <div style={{ color: "#fff", fontSize: 22, fontWeight: 900, marginTop: 2 }}>RM 1,205.00</div>
+                <div style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700, marginTop: 3 }}>+RM 2.82 earned today</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ background: "rgba(74,222,128,0.15)", borderRadius: 8, padding: "4px 10px" }}>
+                  <div style={{ color: "#4ADE80", fontSize: 14, fontWeight: 900 }}>2.80%</div>
+                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: 700 }}>p.a.</div>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button style={{ flex: 1, background: COLORS.blue, color: "#fff", border: "none", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                + Top Up
+              </button>
+              <button style={{ flex: 1, background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, padding: "8px 0", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                Withdraw
+              </button>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { label: "This month earned", val: "RM 2.34", color: COLORS.green, icon: "📈" },
+              { label: "Total earned", val: "RM 18.90", color: COLORS.blue, icon: "💰" },
+              { label: "Days active", val: "87 days", color: COLORS.orange, icon: "📅" },
+              { label: "Projected annual", val: "RM 33.74", color: "#9b59b6", icon: "🎯" },
+            ].map(({ label, val, color, icon }) => (
+              <div key={label} style={{ background: "#eef1f8", borderRadius: 12, padding: "10px 12px" }}>
+                <span style={{ fontSize: 16 }}>{icon}</span>
+                <div style={{ fontSize: 14, fontWeight: 900, color, marginTop: 4 }}>{val}</div>
+                <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 2 }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Tab = ({ icon, label, active, onClick }) => (
   <button
     onClick={onClick}
@@ -516,6 +861,12 @@ export default function TNGWallet() {
             ))}
           </div>
         </div>
+
+    {/* Finance Dashboard */}
+    <FinanceDashboard />
+
+    {/* GO+ Entry & Financial Planning */}
+    <GoPlusAndPlanningRow />
 
         {/* Info Cards */}
         <div style={styles.cardsRow}>
