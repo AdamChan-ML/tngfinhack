@@ -4,3 +4,7 @@ dist/
 venv/
 tngfinhack-venv/
 *.log
+
+# Backend local secrets
+backend/.env
+backend/.env.*.local

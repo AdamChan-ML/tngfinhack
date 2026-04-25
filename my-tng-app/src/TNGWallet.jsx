@@ -2,6 +2,7 @@ import { useState } from "react";
 import cimbLogo from "./assets/CIMB-Logo.jpg";
 import publicBankLogo from "./assets/public-bank.svg";
 import maybankLogo from "./assets/maybank.png";
+import { analyzeUserGoal } from "./api/plannerApi";
 
 const COLORS = {
   blue: "#1450d0",
@@ -17,6 +18,136 @@ const COLORS = {
   lightGray: "#f4f6fb",
   border: "#e8eaf0",
   text: "#1a1a2e",
+};
+
+const PLANNER_STORAGE_KEY = "tng-wallet-planner-v1";
+const DEFAULT_SAMPLE_FILE_NAME = "transaction_lines_sample.txt";
+
+const buildUserBackgroundPayload = (goalText) => ({
+  occupation: "Retail staff",
+  monthly_income: 3000,
+  monthly_expenses: 2400,
+  savings_balance: 900,
+  existing_debt: 500,
+  risk_tolerance: "medium",
+  notes: `UI onboarding goal context: ${goalText}`,
+});
+
+const fallbackMilestones = [
+  {
+    title: "Start GO+ weekly auto-save",
+    hint: "Set RM50-RM100 weekly auto-save to build consistency.",
+    status: "in_progress",
+    optional: false,
+    facility: "GO+",
+    action_label: "Open GO+",
+  },
+  {
+    title: "Build RM1,000 emergency buffer",
+    hint: "Keep funds liquid in GO+ before considering any loan.",
+    status: "pending",
+    optional: false,
+    facility: "GO+",
+    action_label: "Open GO+",
+  },
+  {
+    title: "Simulate RM200 monthly repayment",
+    hint: "Do this for 3 months to test repayment discipline.",
+    status: "pending",
+    optional: false,
+    facility: "GOpinjam",
+    action_label: "Open CashLoan",
+  },
+  {
+    title: "Recheck affordability before GOpinjam",
+    hint: "Only proceed if repayment is within safe cashflow limits.",
+    status: "pending",
+    optional: false,
+    facility: "GOpinjam",
+    action_label: "Open CashLoan",
+  },
+];
+
+const inferFacilityFromText = (text = "") => {
+  const lower = text.toLowerCase();
+
+  if (["go+", "buffer", "emergency", "autosave", "auto-save"].some((keyword) => lower.includes(keyword))) {
+    return { facility: "GO+", action_label: "Open GO+" };
+  }
+  if (["gopinjam", "cashloan", "cash loan", "loan"].some((keyword) => lower.includes(keyword))) {
+    return { facility: "GOpinjam", action_label: "Open CashLoan" };
+  }
+  if (["goinvest", "invest", "investment", "asnb", "e-mas", "principal", "e-trade"].some((keyword) => lower.includes(keyword))) {
+    return { facility: "GOinvest", action_label: "Open GOinvest" };
+  }
+  if (["goinsure", "insure", "insurance", "protection"].some((keyword) => lower.includes(keyword))) {
+    return { facility: "GOinsure", action_label: "Open GOinsure" };
+  }
+
+  return { facility: null, action_label: null };
+};
+
+const parseMilestonesFromText = (text = "") => {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+  .filter((line) => /^[-•✅❗]/.test(line) || /^\d+[.)]/.test(line))
+  .map((line) => line.replace(/^[-•✅❗\s]+/, "").replace(/^\d+[.)]\s*/, "").trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    return fallbackMilestones;
+  }
+
+  return lines.slice(0, 4).map((line, index) => ({
+    ...inferFacilityFromText(line),
+    title: line.slice(0, 90),
+    hint: "Track this in your weekly review.",
+    status: index === 0 ? "in_progress" : "pending",
+    optional: false,
+  }));
+};
+
+const normalizePlannerFromApi = (apiData, goalText) => {
+  const planner = apiData?.planner;
+  const milestones = Array.isArray(planner?.milestones) && planner.milestones.length
+    ? planner.milestones.map((item, index) => {
+        const inferred = inferFacilityFromText(item?.title || "");
+        return {
+          title: item?.title || `Step ${index + 1}`,
+          hint: item?.hint || "Keep progressing with this step.",
+          status: item?.status === "in_progress" || item?.status === "done" ? item.status : "pending",
+          optional: Boolean(item?.optional),
+          facility: item?.facility || inferred.facility,
+          action_label: item?.action_label || inferred.action_label,
+        };
+      })
+    : parseMilestonesFromText(`${apiData?.plan || ""}\n${apiData?.growth || ""}`);
+
+  return {
+    goalText,
+    score: Number.isFinite(apiData?.score) ? apiData.score : 0,
+    headline: planner?.headline || "Your personalized roadmap is ready.",
+    quickSummary: Array.isArray(planner?.quick_summary) ? planner.quick_summary.slice(0, 3) : [],
+    guardrails: Array.isArray(planner?.guardrails) ? planner.guardrails.slice(0, 4) : [],
+    milestones,
+  };
+};
+
+const loadStoredPlanner = () => {
+  const raw = localStorage.getItem(PLANNER_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const saved = JSON.parse(raw);
+    if (!saved?.goalText || !Array.isArray(saved?.milestones)) {
+      return null;
+    }
+    return saved;
+  } catch {
+    localStorage.removeItem(PLANNER_STORAGE_KEY);
+    return null;
+  }
 };
 
 const styles = {
@@ -436,6 +567,25 @@ const GoPlusIcon = () => (
     <text x="19" y="27" fontSize="13" fontWeight="900" fill="#1a1a2e" fontFamily="Nunito,sans-serif">$</text>
     <circle cx="32" cy="12" r="6" fill="#1450d0" />
     <text x="29.5" y="16" fontSize="11" fontWeight="900" fill="#fff" fontFamily="Nunito,sans-serif">+</text>
+  </svg>
+);
+
+const GoInvestIcon = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M4 19h16" stroke="#1450d0" strokeWidth="2" strokeLinecap="round" />
+    <path d="M5.5 19V8.8" stroke="#1450d0" strokeWidth="2" strokeLinecap="round" />
+    <path d="M7.2 16.8l3.3-4.1 2.8 2.2 4.8-6" stroke="#1450d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M7.2 16.8l3.3-4.1 2.8 2.2 4.8-6v8.6H7.2z" fill="#f5cf17" opacity="0.9" />
+    <circle cx="18.1" cy="8.9" r="1.5" fill="#1450d0" />
+  </svg>
+);
+
+const CashLoanIcon = ({ size = 30 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <path d="M3.2 15.2h4.6c1.2 0 2-.8 2.8-1.4.8-.6 1.8-1.1 3.1-1.1h1.7c1.6 0 2.8 1.1 2.8 2.5v2.9H10.3c-1.2 0-2.3.4-3.3 1.1l-2 .2" stroke="#0a66d9" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="15.8" cy="7.7" r="3.6" fill="#f5cf17" stroke="#0a66d9" strokeWidth="1.8" />
+    <path d="M15.8 6.2v3" stroke="#0a66d9" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M14.3 7.7h3" stroke="#0a66d9" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
@@ -949,10 +1099,10 @@ const Tab = ({ icon, label, active, onClick }) => (
   </button>
 );
 
-const MilestoneProductIcon = ({ title }) => {
+const MilestoneProductIcon = ({ title, facility }) => {
   const normalized = (title || "").toLowerCase();
+  const normalizedFacility = (facility || "").toLowerCase();
   const BLUE = "#0a66d9";
-  const YELLOW = "#f5cf17";
 
   const baseWrap = {
     width: 32,
@@ -963,15 +1113,18 @@ const MilestoneProductIcon = ({ title }) => {
     flexShrink: 0,
   };
 
+  if (normalizedFacility) {
+    return (
+      <div style={baseWrap}>
+        <FacilityActionIcon facility={normalizedFacility} size={28} />
+      </div>
+    );
+  }
+
   if (normalized.includes("insurance")) {
     return (
       <div style={baseWrap}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path d="M7 11.5V9.8c0-1.9 1.5-3.4 3.4-3.4h3.2c1.9 0 3.4 1.5 3.4 3.4v1.7" stroke={BLUE} strokeWidth="1.9" strokeLinecap="round" />
-          <rect x="6" y="11.5" width="12" height="7.5" rx="2.2" stroke={BLUE} strokeWidth="1.9" />
-          <path d="M14.2 13.4l4.8 2v2.6c0 2.3-1.5 3.8-3.3 4.9-1.8-1.1-3.3-2.6-3.3-4.9v-2.6l1.8-.8z" fill={YELLOW} stroke={BLUE} strokeWidth="1.7" strokeLinejoin="round" />
-          <path d="M14.5 17.8l1 1 2-2" stroke={BLUE} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <FacilityActionIcon facility="goinsure" size={28} />
       </div>
     );
   }
@@ -979,14 +1132,7 @@ const MilestoneProductIcon = ({ title }) => {
   if (normalized.includes("cashloan") || normalized.includes("loan")) {
     return (
       <div style={baseWrap}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path d="M3.2 15.2h4.6c1.2 0 2-.8 2.8-1.4.8-.6 1.8-1.1 3.1-1.1h1.7c1.6 0 2.8 1.1 2.8 2.5v2.9H10.3c-1.2 0-2.3.4-3.3 1.1l-2 .2" stroke={BLUE} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="15.8" cy="7.7" r="3.6" fill={YELLOW} stroke={BLUE} strokeWidth="1.8" />
-          <path d="M15.8 6.2v3" stroke={BLUE} strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M14.3 7.7h3" stroke={BLUE} strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M10.4 5.8a7 7 0 0 1 8 3.6" stroke={BLUE} strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M9.2 7.6a9 9 0 0 1 10 4.7" stroke={BLUE} strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <FacilityActionIcon facility="gopinjam" size={28} />
       </div>
     );
   }
@@ -994,13 +1140,15 @@ const MilestoneProductIcon = ({ title }) => {
   if (normalized.includes("invest")) {
     return (
       <div style={baseWrap}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path d="M4 19h16" stroke={BLUE} strokeWidth="2" strokeLinecap="round" />
-          <path d="M5.5 19V8.8" stroke={BLUE} strokeWidth="2" strokeLinecap="round" />
-          <path d="M7.2 16.8l3.3-4.1 2.8 2.2 4.8-6" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7.2 16.8l3.3-4.1 2.8 2.2 4.8-6v8.6H7.2z" fill={YELLOW} opacity="0.9" />
-          <circle cx="18.1" cy="8.9" r="1.5" fill={BLUE} />
-        </svg>
+        <FacilityActionIcon facility="goinvest" size={28} />
+      </div>
+    );
+  }
+
+  if (normalized.includes("go+")) {
+    return (
+      <div style={baseWrap}>
+        <FacilityActionIcon facility="go+" size={28} />
       </div>
     );
   }
@@ -1157,11 +1305,48 @@ const InsuranceOptionIcon = ({ label }) => {
   );
 };
 
-const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }) => {
+const FacilityActionIcon = ({ facility, size = 18 }) => {
+  const normalized = (facility || "").toLowerCase();
+
+  if (normalized === "go+") {
+    const scale = size / 44;
+    return (
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ transform: `scale(${scale})`, transformOrigin: "center" }}>
+          <GoPlusIcon />
+        </div>
+      </div>
+    );
+  }
+
+  if (normalized === "goinvest") {
+    return <GoInvestIcon size={size} />;
+  }
+
+  if (normalized === "gopinjam") {
+    return <CashLoanIcon size={size} />;
+  }
+
+  if (normalized === "goinsure") {
+    const scale = size / 30;
+    return (
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ transform: `scale(${scale})`, transformOrigin: "center" }}>
+          <InsuranceOptionIcon label="My Policies" />
+        </div>
+      </div>
+    );
+  }
+
+  return <span style={{ fontSize: Math.max(12, size - 2) }}>🎯</span>;
+};
+
+const FinancialJourneyPage = ({ goalText, milestones, plannerData, onBackHome, onRefineGoal, onUseFacility }) => {
   const totalMilestones = milestones.length;
-  const inProgressCount = totalMilestones > 0 ? 1 : 0;
-  const pendingCount = Math.max(totalMilestones - inProgressCount, 0);
-  const progress = 0;
+  const doneCount = milestones.filter((item) => item.status === "done").length;
+  const inProgressCount = milestones.filter((item) => item.status === "in_progress").length;
+  const pendingCount = Math.max(totalMilestones - doneCount - inProgressCount, 0);
+  const progress = totalMilestones ? Math.round((doneCount / totalMilestones) * 100) : 0;
   const insuranceOptions = [
     "CarInsure",
     "MotoInsure",
@@ -1195,6 +1380,9 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
         </div>
 
         <div style={{ marginTop: 6, fontSize: 15, fontWeight: 900, lineHeight: 1.35 }}>{goalText}</div>
+        {plannerData?.headline && (
+          <div style={{ marginTop: 8, fontSize: 11, opacity: 0.92, lineHeight: 1.5 }}>{plannerData.headline}</div>
+        )}
 
         <div style={{ marginTop: 12, background: "rgba(255,255,255,0.2)", borderRadius: 8, height: 8, overflow: "hidden" }}>
           <div style={{ width: `${progress}%`, height: "100%", background: "#4ADE80", borderRadius: 8, transition: "width 0.35s ease" }} />
@@ -1214,7 +1402,43 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
             <div style={{ fontSize: 9, opacity: 0.85, fontWeight: 700 }}>Pending</div>
           </div>
         </div>
+
+        {plannerData?.score !== undefined && (
+          <div style={{ marginTop: 8, fontSize: 10, fontWeight: 800, opacity: 0.88 }}>
+            Readiness score: {plannerData.score}/100
+          </div>
+        )}
       </div>
+
+      {(plannerData?.quickSummary?.length || plannerData?.guardrails?.length) ? (
+        <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
+          {plannerData?.quickSummary?.length ? (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.text, marginBottom: 6 }}>Quick insights</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {plannerData.quickSummary.map((point, idx) => (
+                  <div key={`summary-${idx}`} style={{ fontSize: 10, fontWeight: 700, color: COLORS.text, background: "#f6f8ff", borderRadius: 8, padding: "7px 8px" }}>
+                    {point}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {plannerData?.guardrails?.length ? (
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 900, color: COLORS.text, marginBottom: 6 }}>Guardrails</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {plannerData.guardrails.map((rule, idx) => (
+                  <div key={`guardrail-${idx}`} style={{ fontSize: 10, fontWeight: 700, color: "#8a5a00", background: "#fff8ed", borderRadius: 8, padding: "7px 8px" }}>
+                    {rule}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div style={{ background: COLORS.white, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -1225,13 +1449,15 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {milestones.map((item, idx) => (
             (() => {
-              const isInProgress = idx === 0;
-              const statusLabel = isInProgress ? "In-Progress" : "Pending";
-              const statusColor = isInProgress ? "#9a6b00" : "#5b6475";
-              const statusBg = isInProgress ? COLORS.yellow : "#e9edf6";
-              const cardBg = isInProgress ? "#fffaf0" : "#f8f9fd";
-              const cardBorder = isInProgress ? "#f9e7bb" : "#edf0f6";
-              const dotBg = isInProgress ? "#f5c800" : "#d5dcef";
+              const status = item.status || (idx === 0 ? "in_progress" : "pending");
+              const isDone = status === "done";
+              const isInProgress = status === "in_progress";
+              const statusLabel = isDone ? "Done" : isInProgress ? "In-Progress" : "Pending";
+              const statusColor = isDone ? "#0c7f53" : isInProgress ? "#9a6b00" : "#5b6475";
+              const statusBg = isDone ? "#e8f8ee" : isInProgress ? COLORS.yellow : "#e9edf6";
+              const cardBg = isDone ? "#f2fbf7" : isInProgress ? "#fffaf0" : "#f8f9fd";
+              const cardBorder = isDone ? "#cdeedc" : isInProgress ? "#f9e7bb" : "#edf0f6";
+              const dotBg = isDone ? COLORS.green : isInProgress ? "#f5c800" : "#d5dcef";
 
               return (
             <div
@@ -1257,7 +1483,20 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
 
               <div style={{ minWidth: 0, width: "100%" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <MilestoneProductIcon title={item.title} />
+                  <button
+                    onClick={() => item.facility && onUseFacility?.(item.facility)}
+                    disabled={!item.facility}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      padding: 0,
+                      cursor: item.facility ? "pointer" : "default",
+                      opacity: item.facility ? 1 : 0.8,
+                    }}
+                    title={item.facility ? `Open ${item.facility}` : "No feature mapped"}
+                  >
+                    <MilestoneProductIcon title={item.title} facility={item.facility} />
+                  </button>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
                       <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.text, lineHeight: 1.35 }}>{item.title}</div>
@@ -1284,6 +1523,31 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
 
                 <div style={{ fontSize: 10, color: COLORS.gray, fontWeight: 600, marginTop: 4, lineHeight: 1.45 }}>{item.hint}</div>
 
+                {item.facility && (
+                  <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-start" }}>
+                    <button
+                      onClick={() => onUseFacility?.(item.facility)}
+                      style={{
+                        border: "none",
+                        background: COLORS.blue,
+                        color: "#fff",
+                        borderRadius: 999,
+                        padding: "5px 10px",
+                        fontSize: 10,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <FacilityActionIcon facility={item.facility} size={14} />
+                      {item.action_label || `Open ${item.facility}`}
+                    </button>
+                  </div>
+                )}
+
                 {item.showInvestmentIcons && (
                   <div
                     style={{
@@ -1299,11 +1563,7 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                        <path d="M6 16h12l2 4H4l2-4z" stroke="#1450d0" strokeWidth="1.5" strokeLinejoin="round" />
-                        <path d="M9 12h6l2 4H7l2-4z" stroke="#1450d0" strokeWidth="1.5" fill="#f5c800" strokeLinejoin="round" />
-                        <path d="M12 4v3M7 6l2 2M17 6l-2 2" stroke="#1450d0" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
+                      <GoInvestIcon size={28} />
                       <span style={{ fontSize: 10, fontWeight: 700, color: COLORS.text }}>e-Mas</span>
                     </div>
 
@@ -1366,12 +1626,7 @@ const FinancialJourneyPage = ({ goalText, milestones, onBackHome, onRefineGoal }
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
-                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                        <path d="M3.2 15.2h4.6c1.2 0 2-.8 2.8-1.4.8-.6 1.8-1.1 3.1-1.1h1.7c1.6 0 2.8 1.1 2.8 2.5v2.9H10.3c-1.2 0-2.3.4-3.3 1.1l-2 .2" stroke="#0a66d9" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="15.8" cy="7.7" r="3.6" fill="#f5cf17" stroke="#0a66d9" strokeWidth="1.8" />
-                        <path d="M15.8 6.2v3" stroke="#0a66d9" strokeWidth="1.5" strokeLinecap="round" />
-                        <path d="M14.3 7.7h3" stroke="#0a66d9" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
+                      <CashLoanIcon size={30} />
                       <span style={{ fontSize: 11, fontWeight: 800, color: COLORS.text }}>CashLoan</span>
                     </div>
                   </div>
@@ -1776,9 +2031,10 @@ const LoanSubmissionPage = ({ selectedLoan, report, onApplyAnother, onBackHome }
 };
 
 export default function TNGWallet() {
+  const [restoredPlanner] = useState(() => loadStoredPlanner());
   const [balVisible, setBalVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
-  const [userGoal, setUserGoal] = useState("Apply motorcycle loan of RM10,000 in one year time");
+  const [userGoal, setUserGoal] = useState(restoredPlanner?.goalText || "Apply motorcycle loan of RM10,000 in one year time");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [goalFocus, setGoalFocus] = useState("loan");
@@ -1786,10 +2042,14 @@ export default function TNGWallet() {
   const [loanAmount, setLoanAmount] = useState("10000");
   const [loanTimeline, setLoanTimeline] = useState("1 year");
   const [otherGoalDetail, setOtherGoalDetail] = useState("");
-  const [showJourneyPage, setShowJourneyPage] = useState(false);
-  const [journeyMilestones, setJourneyMilestones] = useState([]);
+  const [showJourneyPage, setShowJourneyPage] = useState(Boolean(restoredPlanner));
+  const [journeyMilestones, setJourneyMilestones] = useState(restoredPlanner?.milestones || []);
   const [loanFlowStep, setLoanFlowStep] = useState("none");
   const [selectedLoanId, setSelectedLoanId] = useState("personal-flexi");
+  const [plannerData, setPlannerData] = useState(restoredPlanner);
+  const [plannerLoading, setPlannerLoading] = useState(false);
+  const [plannerError, setPlannerError] = useState("");
+  const [preferredFinanceSection, setPreferredFinanceSection] = useState("spending");
   
   // State to control main vs secondary homepage simulation
   const [isDemoAchieved, setIsDemoAchieved] = useState(false);
@@ -1875,51 +2135,81 @@ export default function TNGWallet() {
     { value: "investment", label: "Investment", icon: "📊" },
   ];
 
-  const completeOnboarding = () => {
+  const buildGoalTextFromInputs = () => {
     if (goalFocus === "loan") {
       const normalizedAmount = Number(loanAmount || 0).toLocaleString();
-      setUserGoal(`Apply ${loanType} loan of RM${normalizedAmount} in ${loanTimeline} time`);
-      setJourneyMilestones([
-        {
-          title: "Stabilize monthly cash flow using GO+",
-          hint: "Build consistency with weekly GO+ top-ups and keep spending within budget.",
-          done: true,
-        },
-        {
-          title: "Invest a portion of savings into Investment Options",
-          hint: "Allocate a percentage from savings into suitable investment choices like e-Mas, ASNB, Principal®, or e-Trade.",
-          done: false,
-          showInvestmentIcons: true,
-        },
-        {
-          title: "Protect plan with GOInsurance",
-          hint: "Optional safeguard layer before taking on major financing commitments.",
-          done: false,
-          optional: true,
-          showInsuranceOptions: true,
-        },
-        {
-          title: "Apply for CashLoan",
-          hint: `Prepare and submit your application to meet your final goal.`,
-          done: false,
-          showCashLoanOptions: true,
-        },
-      ]);
-    } else {
-      const label = focusOptions.find((o) => o.value === goalFocus)?.label || "Financial";
-      const detail = otherGoalDetail.trim() || "Build consistency and reach my target";
-      setUserGoal(`${label} Goal: ${detail}`);
-      setJourneyMilestones([
-        { title: `Define your ${label.toLowerCase()} target`, hint: "Set realistic monthly checkpoint", done: true },
-        { title: "Automate monthly contribution", hint: "Use recurring top-up from wallet", done: false },
-        { title: "Track progress every 2 weeks", hint: "Adjust amount when income changes", done: false },
-        { title: "Review and optimize plan", hint: "Increase allocation after milestone hit", done: false },
-      ]);
+      return `Apply ${loanType} loan of RM${normalizedAmount} in ${loanTimeline} time`;
     }
-    
-    setShowOnboarding(false);
-    setShowJourneyPage(true);
-    setOnboardingStep(1);
+
+    const label = focusOptions.find((o) => o.value === goalFocus)?.label || "Financial";
+    const detail = otherGoalDetail.trim() || "Build consistency and reach my target";
+    return `${label} Goal: ${detail}`;
+  };
+
+  const requestPlannerData = async (goalText) => {
+    return analyzeUserGoal({
+      goal: goalText,
+      userBackground: buildUserBackgroundPayload(goalText),
+      sampleFileName: DEFAULT_SAMPLE_FILE_NAME,
+      months: 3,
+      transactionsPerMonth: 18,
+    });
+  };
+
+  const handleUseFacility = (facility) => {
+    if (!facility) return;
+
+    const normalized = facility.toLowerCase();
+    let nextSection = "spending";
+
+    if (normalized === "go+") {
+      setIsDemoAchieved(false);
+      nextSection = "go+";
+    } else if (normalized === "gopinjam") {
+      setIsDemoAchieved(true);
+      nextSection = "cashloan";
+    } else if (normalized === "goinvest") {
+      nextSection = "goals";
+    } else if (normalized === "goinsure") {
+      nextSection = "categories";
+    }
+
+    setPreferredFinanceSection(nextSection);
+    setShowJourneyPage(false);
+    setActiveTab("home");
+  };
+
+  const completeOnboarding = async () => {
+    const goalText = buildGoalTextFromInputs();
+    setUserGoal(goalText);
+    setPlannerLoading(true);
+    setPlannerError("");
+
+    try {
+      const apiData = await requestPlannerData(goalText);
+      const normalizedPlanner = normalizePlannerFromApi(apiData, goalText);
+      setJourneyMilestones(normalizedPlanner.milestones);
+      setPlannerData(normalizedPlanner);
+      localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(normalizedPlanner));
+    } catch {
+      const fallbackPlanner = {
+        goalText,
+        score: 0,
+        headline: "Plan ready. We’ll refine recommendations when the service is reachable.",
+        quickSummary: [],
+        guardrails: ["Keep repayments below a safe share of your lowest monthly income."],
+        milestones: fallbackMilestones,
+      };
+      setJourneyMilestones(fallbackPlanner.milestones);
+      setPlannerData(fallbackPlanner);
+      setPlannerError("Using offline planner template for now.");
+      localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(fallbackPlanner));
+    } finally {
+      setPlannerLoading(false);
+      setShowOnboarding(false);
+      setShowJourneyPage(true);
+      setOnboardingStep(1);
+    }
   };
 
   return (
@@ -2023,6 +2313,8 @@ export default function TNGWallet() {
           <FinancialJourneyPage
             goalText={userGoal}
             milestones={journeyMilestones}
+            plannerData={plannerData}
+            onUseFacility={handleUseFacility}
             onBackHome={() => setShowJourneyPage(false)}
             onRefineGoal={() => {
               setShowJourneyPage(false);
@@ -2034,6 +2326,7 @@ export default function TNGWallet() {
           <>
             {/* Finance Dashboard */}
             <FinanceDashboard
+              key={`finance-${isDemoAchieved}-${preferredFinanceSection}`}
               userGoal={userGoal}
               setUserGoal={setUserGoal}
               onOpenOnboarding={() => setShowOnboarding(true)}
@@ -2253,6 +2546,11 @@ export default function TNGWallet() {
 
               {onboardingStep === 2 && (
                 <>
+                  {plannerError && (
+                    <div style={{ fontSize: 10, color: "#8a5a00", background: "#fff8ed", borderRadius: 8, padding: "6px 8px", marginBottom: 8, fontWeight: 700 }}>
+                      {plannerError}
+                    </div>
+                  )}
                   {goalFocus === "loan" ? (
                     <>
                       <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.text, marginBottom: 8 }}>
@@ -2316,9 +2614,10 @@ export default function TNGWallet() {
                     </button>
                     <button
                       onClick={completeOnboarding}
+                      disabled={plannerLoading}
                       style={{ border: "none", background: COLORS.blue, color: COLORS.white, borderRadius: 10, padding: "8px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
                     >
-                      Save goal
+                      {plannerLoading ? "Saving..." : "Save goal"}
                     </button>
                   </div>
                 </>

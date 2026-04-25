@@ -1,0 +1,86 @@
+{
+  "provider": "Touch 'n Go eWallet",
+  "market": "Malaysia",
+  "default_currency": "MYR",
+  "currency_format_guidance": "Use Malaysian Ringgit in all amounts, formatted like RM50, RM200/month, RM1,500.",
+  "facilities": [
+    {
+      "name": "GO+",
+      "category": "Savings / Cash Management",
+      "use_for": [
+        "Low-friction daily savings",
+        "Parking emergency buffer",
+        "Short-term liquidity while earning potential returns"
+      ],
+      "when_to_recommend": [
+        "User has unstable income and needs cash reserve discipline",
+        "User has no emergency fund",
+        "User wants automatic habit-building before larger commitments"
+      ],
+      "cautions": [
+        "Do not describe returns as guaranteed",
+        "Keep language as educational, not financial advice"
+      ]
+    },
+    {
+      "name": "GOinvest",
+      "category": "Investment",
+      "use_for": [
+        "Longer-term wealth building",
+        "Goal-based investing beyond cash savings",
+        "Diversifying from pure wallet balance"
+      ],
+      "when_to_recommend": [
+        "User already has basic cash buffer",
+        "User has medium/long-term goals",
+        "User can tolerate some market fluctuation"
+      ],
+      "cautions": [
+        "Acknowledge investment risk and capital fluctuation",
+        "Do not promise returns"
+      ]
+    },
+    {
+      "name": "GOpinjam",
+      "category": "Cash Loan",
+      "use_for": [
+        "Structured financing for urgent and valid needs",
+        "Consolidating expensive short-term debt where appropriate",
+        "Bridging temporary cashflow gaps"
+      ],
+      "when_to_recommend": [
+        "User has repayment capacity and clear repayment plan",
+        "Loan purpose is productive or necessary",
+        "Alternative lower-cost options are insufficient"
+      ],
+      "cautions": [
+        "Highlight affordability and repayment burden",
+        "Avoid encouraging unnecessary borrowing"
+      ]
+    },
+    {
+      "name": "GOinsure",
+      "category": "Insurance / Protection",
+      "use_for": [
+        "Basic risk protection",
+        "Reducing financial shock from unexpected events",
+        "Protecting income and family obligations"
+      ],
+      "when_to_recommend": [
+        "User has dependents or high risk exposure",
+        "User has low resilience to emergencies",
+        "User is starting formal financial protection planning"
+      ],
+      "cautions": [
+        "Coverage and exclusions must be checked before purchase",
+        "Do not overstate claim certainty"
+      ]
+    }
+  ],
+  "response_policy": [
+    "Prioritize practical action steps mapped to available TNG facilities.",
+    "Use MYR examples in budgets, savings targets, and repayments.",
+    "If user profile is unclear, state assumptions briefly before recommending.",
+    "Keep guidance supportive, concise, and non-judgmental."
+  ]
+}

@@ -1,0 +1,32 @@
+2026-03-01,0.00,none,No income received
+2026-03-02,-85.40,groceries,AEON groceries
+2026-03-03,45.00,gig_delivery,Food delivery earnings
+2026-03-04,-22.90,food,Lunch at mamak
+2026-03-05,120.00,freelance,Small design job
+2026-03-06,-1200.00,rent,Apartment rent
+2026-03-07,60.00,gig_delivery,Weekend delivery income
+2026-03-08,0.00,none,No jobs completed
+2026-03-09,35.00,gig_delivery,Evening delivery
+2026-03-10,-59.00,mobile_data,Mobile prepaid package
+2026-03-11,0.00,none,Low demand day
+2026-03-12,-150.00,debt_repayment,Credit card payment
+2026-03-13,90.00,freelance,Logo design quick job
+2026-03-14,40.00,gig_delivery,Short delivery shift
+2026-03-15,-41.80,transport,Petrol refill
+2026-03-16,0.00,none,No income
+2026-03-17,70.00,gig_delivery,Peak hour delivery
+2026-03-18,-66.30,groceries,Jaya Grocer
+2026-03-19,55.00,gig_delivery,Afternoon shift
+2026-03-20,-30.00,entertainment,Movie ticket
+2026-03-21,0.00,none,Rest day
+2026-03-22,100.00,freelance,Quick UI fix job
+2026-03-23,-18.20,food,Coffee and snacks
+2026-03-24,30.00,gig_delivery,Short shift
+2026-03-25,95.00,side_hustle,Delivery side gig
+2026-03-26,-38.60,shopping,Household items
+2026-03-27,0.00,none,No jobs
+2026-03-28,-73.90,food,Family dinner
+2026-03-29,-45.00,insurance,GOinsure monthly protection
+2026-03-30,-20.00,savings,Small savings attempt
+2026-03-31,-130.00,debt_repayment,Personal loan installment
+2026-04-01,50.00,gig_delivery,Low earnings day
