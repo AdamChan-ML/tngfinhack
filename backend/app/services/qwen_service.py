@@ -36,7 +36,7 @@ def call_qwen(prompt: str) -> str:
     }
 
     try:
-        response = requests.post(endpoint, json=payload, headers=headers, timeout=20)
+        response = requests.post(endpoint, json=payload, headers=headers, timeout=120)
         response.raise_for_status()
         data = response.json()
         return data["choices"][0]["message"]["content"].strip()
