@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://13.229.124.39:8000").replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const DEFAULT_TIMEOUT_MS = 150000;
 const DEFAULT_SUMMARY_TIMEOUT_MS = Number(import.meta.env.VITE_TX_SUMMARY_TIMEOUT_MS || 15000);
@@ -24,7 +24,7 @@ async function postJson(path, payload, timeoutMs = DEFAULT_TIMEOUT_MS) {
     });
   } catch (error) {
     if (error?.name === "AbortError") {
-      throw new Error(`Planner API ${path} timed out after ${Math.round(timeoutMs / 1000)}s`);
+      throw new Error(`Planner API ${path} timed out after ${Math.round(timeoutMs / 1000)}s`, { cause: error });
     }
     throw error;
   }
